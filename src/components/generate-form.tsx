@@ -76,12 +76,21 @@ export function GenerateForm() {
     }
   }
 
-  const copyToClipboard = (text: string, field: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copied to clipboard!',
-      description: `${field} has been copied.`,
-    });
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: 'Copied to clipboard!',
+        description: `${field} has been copied.`,
+      });
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+      toast({
+        variant: 'destructive',
+        title: 'Copy Failed',
+        description: 'Could not copy text to clipboard. Your browser may not support this feature.',
+      });
+    }
   };
 
   return (
