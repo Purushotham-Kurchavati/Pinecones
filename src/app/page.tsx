@@ -72,8 +72,8 @@ export default async function CommunityPage() {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="absolute bottom-0 left-0 p-6">
-            <h1 className="text-4xl font-headline font-bold text-white">Welcome to the Artisan's Circle</h1>
-            <p className="text-lg text-primary-foreground/90 mt-2">A space for India's craftspeople to connect, share, and inspire.</p>
+            <h1 className="text-4xl font-headline font-bold text-white">Welcome to the Pinecone Community</h1>
+            <p className="text-lg text-primary-foreground/90 mt-2">A space for craftspeople to connect, share, and inspire.</p>
           </div>
         </div>
       </Card>

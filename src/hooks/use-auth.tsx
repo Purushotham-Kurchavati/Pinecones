@@ -3,9 +3,10 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import {
   onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithPopup,
   signOut as firebaseSignOut,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
   User,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -15,7 +16,8 @@ import { useToast } from './use-toast';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signUp: (email: string, password: string, displayName: string) => Promise<boolean>;
+  signIn: (email: string, password: string) => Promise<boolean>;
   signOut: () => Promise<void>;
 }
 
@@ -34,36 +36,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
+  const signUp = async (email: string, password: string, displayName: string) => {
     try {
-      const result = await signInWithPopup(auth, provider);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, { displayName });
+      // Manually update the user state because onAuthStateChanged can be slow
+      setUser({ ...userCredential.user, displayName });
+      toast({
+        title: 'Account Created!',
+        description: `Welcome to the community, ${displayName}!`,
+      });
+      return true;
+    } catch (error: any) {
+      console.error('Error signing up', error);
+      toast({
+        variant: 'destructive',
+        title: 'Sign-up Error',
+        description: error.message,
+      });
+      return false;
+    }
+  };
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
       setUser(result.user);
       toast({
-        title: 'Signed in!',
-        description: `Welcome back, ${result.user.displayName}!`,
+        title: 'Signed In!',
+        description: `Welcome back, ${result.user.displayName || 'Artisan'}!`,
       });
+      return true;
     } catch (error: any) {
-      console.error('Error signing in with Google', error);
-      if (error.code === 'auth/unauthorized-domain') {
-        toast({
-            variant: 'destructive',
-            title: 'Unauthorized Domain',
-            description: 'This domain is not authorized for sign-in. Please contact support.',
-        });
-      } else if (error.code === 'auth/popup-blocked') {
-        toast({
-            variant: 'destructive',
-            title: 'Popup Blocked',
-            description: 'The sign-in popup was blocked by your browser. Please allow popups for this site.',
-        });
-      } else {
-        toast({
-            variant: 'destructive',
-            title: 'Sign-in Error',
-            description: 'An unexpected error occurred during sign-in. Please try again.',
-        });
-      }
+      console.error('Error signing in', error);
+      toast({
+        variant: 'destructive',
+        title: 'Sign-in Error',
+        description: error.message,
+      });
+      return false;
     }
   };
 
@@ -71,7 +82,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await firebaseSignOut(auth);
       // User state will be updated by onAuthStateChanged
-    } catch (error) {
+      toast({
+        title: 'Signed Out',
+        description: 'You have been successfully signed out.',
+      });
+    } catch (error: any) {
       console.error('Error signing out', error);
       toast({
         variant: 'destructive',
@@ -104,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

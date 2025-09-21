@@ -11,10 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import { LogOut, User as UserIcon } from 'lucide-react';
+import Link from 'next/link';
 
 export function AuthButton() {
-  const { user, signInWithGoogle, signOut, loading } = useAuth();
+  const { user, signOut, loading } = useAuth();
 
   if (loading) {
     return <Button variant="outline" size="sm" disabled>Loading...</Button>;
@@ -22,10 +23,14 @@ export function AuthButton() {
 
   if (!user) {
     return (
-      <Button variant="outline" onClick={signInWithGoogle}>
-        <LogIn className="mr-2 h-4 w-4" />
-        Sign In with Google
-      </Button>
+      <div className="flex items-center space-x-2">
+        <Button asChild variant="ghost">
+          <Link href="/login">Login</Link>
+        </Button>
+        <Button asChild>
+          <Link href="/signup">Sign Up</Link>
+        </Button>
+      </div>
     );
   }
 
