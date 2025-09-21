@@ -1,9 +1,12 @@
 import { getFirestore, collection, getDocs, orderBy, query, Timestamp, FirestoreError } from 'firebase/firestore';
+import Image from 'next/image';
 import { app } from '@/lib/firebase';
 import type { Post } from '@/lib/types';
 import { PostList } from '@/components/post-list';
 import { CreatePostDialog } from '@/components/create-post-dialog';
 import { Suspense } from 'react';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Card } from '@/components/ui/card';
 
 async function getPosts(): Promise<Post[]> {
   try {
@@ -29,8 +32,6 @@ async function getPosts(): Promise<Post[]> {
       return [];
     }
     console.error("Error fetching posts:", error);
-    // In case of other errors, we'll also return an empty array to prevent a crash
-    // but the error will be visible in the server logs.
     return [];
   }
 }
@@ -54,11 +55,31 @@ function PostsSkeleton() {
 
 export default async function CommunityPage() {
   const posts = await getPosts();
+  const heroImage = PlaceHolderImages.find(img => img.id === 'indian-craft-hero');
 
   return (
     <div className="space-y-8">
+      <Card className="overflow-hidden">
+        <div className="relative h-56 w-full">
+          {heroImage && (
+            <Image
+              src={heroImage.imageUrl}
+              alt={heroImage.description}
+              fill
+              className="object-cover"
+              data-ai-hint={heroImage.imageHint}
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute bottom-0 left-0 p-6">
+            <h1 className="text-4xl font-headline font-bold text-white">Welcome to the Artisan's Circle</h1>
+            <p className="text-lg text-primary-foreground/90 mt-2">A space for India's craftspeople to connect, share, and inspire.</p>
+          </div>
+        </div>
+      </Card>
+      
       <div className="flex justify-between items-center">
-        <h1 className="text-4xl font-headline font-bold">Community</h1>
+        <h2 className="text-3xl font-headline font-bold">Community Discussions</h2>
         <CreatePostDialog />
       </div>
       
