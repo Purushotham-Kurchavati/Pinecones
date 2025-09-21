@@ -29,16 +29,16 @@ async function getPosts(): Promise<Post[]> {
   } catch (error) {
     if (error instanceof FirestoreError) {
       if (error.code === 'not-found' || error.code === 'failed-precondition') {
-        console.warn("Firestore database not found or not initialized. It may not be created yet. Returning empty posts array.");
+        console.warn("Firestore 'posts' collection or necessary index not found. It may not be created yet. Returning empty posts array.");
         return [];
       }
       if (error.code === 'permission-denied') {
-        console.error("Firestore security rules are denying access to the 'posts' collection. Please update your rules in the Firebase console to allow reads. For development, you can use: `rules_version = '2'; service cloud.firestore { match /databases/{database}/documents { match /{document=**} { allow read, write: if true; } } }`");
+        console.error("Firestore security rules are denying access to the 'posts' collection. Please update your rules in the Firebase console to allow reads. For development, you can use: `rules_version = '2'; service cloud.firestore { match /databases/{database}/documents { match /posts/{postId} { allow read: if true; } } }`");
         return [];
       }
     }
     console.error("Error fetching posts:", error);
-    // Rethrow other errors or return empty
+    // For any other errors, return an empty array to prevent the page from crashing.
     return [];
   }
 }
