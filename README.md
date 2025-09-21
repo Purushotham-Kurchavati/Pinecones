@@ -1,8 +1,3 @@
-Got it 👍 You want the README in one continuous long page without too many sections breaking it up — clean and scrollable. Here’s the full version, formatted as a single flowing README:
-
-⸻
-
-
 # 🌲 Pinecones: Artisan Community & AI Toolkit
 
 Pinecones is a web application built for artisans and craftspeople to connect, share their work, and grow their online presence. It combines a vibrant community forum with a powerful AI-driven product description generator tailored for e-commerce.
