@@ -7,9 +7,13 @@ import {
   signInWithRedirect,
   signOut as firebaseSignOut,
   User,
+  getRedirectResult,
+  inMemoryPersistence,
+  setPersistence,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from './use-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -23,6 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -35,9 +40,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
+      // Use redirect-based sign-in to avoid popup blockers
+      await setPersistence(auth, inMemoryPersistence);
       await signInWithRedirect(auth, provider);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing in with Google', error);
+      if (error.code === 'auth/unauthorized-domain') {
+        toast({
+            variant: 'destructive',
+            title: 'Unauthorized Domain',
+            description: 'This domain is not authorized for sign-in. Please contact support.',
+        });
+      } else {
+        toast({
+            variant: 'destructive',
+            title: 'Sign-in Error',
+            description: 'An unexpected error occurred during sign-in. Please try again.',
+        });
+      }
     }
   };
 
@@ -46,8 +66,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await firebaseSignOut(auth);
     } catch (error) {
       console.error('Error signing out', error);
+      toast({
+        variant: 'destructive',
+        title: 'Sign-out Error',
+        description: 'Failed to sign out. Please try again.',
+      });
     }
   };
+  
+  // Handle the redirect result
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          // User signed in.
+          setUser(result.user);
+        }
+      })
+      .catch((error) => {
+        console.error('Error getting redirect result', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
 
   if (loading) {
     return (
