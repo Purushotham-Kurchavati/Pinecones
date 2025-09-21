@@ -27,11 +27,18 @@ async function getPosts(): Promise<Post[]> {
       };
     });
   } catch (error) {
-    if (error instanceof FirestoreError && (error.code === 'not-found' || error.code === 'failed-precondition')) {
-      console.warn("Firestore database not found or not initialized. It may not be created yet. Returning empty posts array.");
-      return [];
+    if (error instanceof FirestoreError) {
+      if (error.code === 'not-found' || error.code === 'failed-precondition') {
+        console.warn("Firestore database not found or not initialized. It may not be created yet. Returning empty posts array.");
+        return [];
+      }
+      if (error.code === 'permission-denied') {
+        console.error("Firestore security rules are denying access to the 'posts' collection. Please update your rules in the Firebase console to allow reads. For development, you can use: `allow read: if true;`");
+        return [];
+      }
     }
     console.error("Error fetching posts:", error);
+    // Rethrow other errors or return empty
     return [];
   }
 }
