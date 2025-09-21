@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import type { Comment } from '@/lib/types';
 import { createComment } from '@/actions/posts';
@@ -21,7 +21,7 @@ export function CommentSection({ postId, comments }: CommentSectionProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const formRef = React.useRef<HTMLFormElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleCommentSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
