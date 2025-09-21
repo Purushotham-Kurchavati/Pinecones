@@ -24,11 +24,13 @@ async function getPosts(): Promise<Post[]> {
       };
     });
   } catch (error) {
-    if (error instanceof FirestoreError && error.code === 'not-found') {
-      console.warn("Firestore database not found. It may not be created yet. Returning empty posts array.");
+    if (error instanceof FirestoreError && (error.code === 'not-found' || error.code === 'failed-precondition')) {
+      console.warn("Firestore database not found or not initialized. It may not be created yet. Returning empty posts array.");
       return [];
     }
     console.error("Error fetching posts:", error);
+    // In case of other errors, we'll also return an empty array to prevent a crash
+    // but the error will be visible in the server logs.
     return [];
   }
 }
