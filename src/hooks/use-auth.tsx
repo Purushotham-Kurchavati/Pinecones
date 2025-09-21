@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
@@ -39,22 +40,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, displayName: string) => {
     try {
-      // 1. Create the user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const newUser = userCredential.user;
 
-      // 2. Update their profile in Firebase Auth
       await updateProfile(newUser, { displayName });
-
-      // 3. Create a document for them in the 'users' collection in Firestore
-      await setDoc(doc(db, 'users', newUser.uid), {
-        uid: newUser.uid,
-        displayName: displayName,
-        email: email,
-        createdAt: serverTimestamp(),
-      });
       
-      // Manually update the user state because onAuthStateChanged can be slow
+      try {
+        await setDoc(doc(db, 'users', newUser.uid), {
+          uid: newUser.uid,
+          displayName: displayName,
+          email: email,
+          createdAt: serverTimestamp(),
+        });
+      } catch (firestoreError) {
+          console.error("Firestore Error: Failed to create user document.", firestoreError);
+          // Check if it's a permission error and log a helpful message.
+          if (firestoreError && typeof firestoreError === 'object' && 'code' in firestoreError && (firestoreError as {code: string}).code === 'permission-denied') {
+              console.warn("Heads up: The user was created in Firebase Authentication, but their profile couldn't be saved to Firestore due to security rules. Please update your Firestore rules to allow writes to the 'users' collection. For example: `match /users/{userId} { allow create: if request.auth.uid == userId; }`");
+          }
+      }
+
       setUser({ ...newUser, displayName });
       
       toast({
@@ -110,7 +115,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
-      // User state will be updated by onAuthStateChanged
       toast({
         title: 'Signed Out',
         description: 'You have been successfully signed out.',
