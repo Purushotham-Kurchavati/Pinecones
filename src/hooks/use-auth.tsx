@@ -9,7 +9,8 @@ import {
   updateProfile,
   User,
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from './use-toast';
 
@@ -38,10 +39,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, displayName: string) => {
     try {
+      // 1. Create the user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, { displayName });
+      const newUser = userCredential.user;
+
+      // 2. Update their profile in Firebase Auth
+      await updateProfile(newUser, { displayName });
+
+      // 3. Create a document for them in the 'users' collection in Firestore
+      await setDoc(doc(db, 'users', newUser.uid), {
+        uid: newUser.uid,
+        displayName: displayName,
+        email: email,
+        createdAt: serverTimestamp(),
+      });
+      
       // Manually update the user state because onAuthStateChanged can be slow
-      setUser({ ...userCredential.user, displayName });
+      setUser({ ...newUser, displayName });
+      
       toast({
         title: 'Account Created!',
         description: `Welcome to the community, ${displayName}!`,
