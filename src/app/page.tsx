@@ -33,7 +33,7 @@ async function getPosts(): Promise<Post[]> {
         return [];
       }
       if (error.code === 'permission-denied') {
-        console.error("Firestore security rules are denying access to the 'posts' collection. Please update your rules in the Firebase console to allow reads. For development, you can use: `allow read: if true;`");
+        console.error("Firestore security rules are denying access to the 'posts' collection. Please update your rules in the Firebase console to allow reads. For development, you can use: `rules_version = '2'; service cloud.firestore { match /databases/{database}/documents { match /{document=**} { allow read, write: if true; } } }`");
         return [];
       }
     }
