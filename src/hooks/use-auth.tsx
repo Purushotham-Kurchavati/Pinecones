@@ -69,10 +69,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return true;
     } catch (error: any) {
       console.error('Error signing in', error);
+      let errorMessage = 'An unknown error occurred. Please try again.';
+      if (error && typeof error === 'object' && 'code' in error) {
+        const errorCode = (error as { code: string }).code;
+        switch (errorCode) {
+          case 'auth/invalid-credential':
+          case 'auth/wrong-password':
+          case 'auth/user-not-found':
+            errorMessage = 'Invalid email or password. Please check your credentials or sign up.';
+            break;
+          default:
+            errorMessage = `Firebase: Error (${errorCode}).`;
+            break;
+        }
+      }
       toast({
         variant: 'destructive',
         title: 'Sign-in Error',
-        description: error.message,
+        description: errorMessage,
       });
       return false;
     }
