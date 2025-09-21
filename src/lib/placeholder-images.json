@@ -2,9 +2,9 @@
   "placeholderImages": [
     {
       "id": "indian-craft-hero",
-      "description": "A vibrant and detailed shot of Indian crafts, perhaps pottery or textiles.",
-      "imageUrl": "https://picsum.photos/seed/craftindia/1200/400",
-      "imageHint": "indian crafts"
+      "description": "A close-up shot of beautifully handcrafted Indian clay pots.",
+      "imageUrl": "https://picsum.photos/seed/pottery/1200/400",
+      "imageHint": "indian pottery"
     }
   ]
 }
