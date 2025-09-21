@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { createPost } from '@/actions/posts';
@@ -27,7 +26,6 @@ export function CreatePostDialog() {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -55,16 +53,7 @@ export function CreatePostDialog() {
 
     setIsSubmitting(false);
   };
-
-  if (!user) {
-    return (
-      <Button disabled>
-        <PlusCircle className="mr-2 h-4 w-4" />
-        Sign in to post
-      </Button>
-    );
-  }
-
+  
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -77,7 +66,7 @@ export function CreatePostDialog() {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Create a new post</DialogTitle>
-            <DialogDescription>Share your thoughts with the community.</DialogDescription>
+            <DialogDescription>Share your thoughts with the community. Anyone can post.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
@@ -93,11 +82,19 @@ export function CreatePostDialog() {
               <Textarea id="content" name="content" className="col-span-3" required />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="isAnonymous" className="text-right">
-                Post Anonymously
+              <Label htmlFor="imageUrl" className="text-right">
+                Image URL
               </Label>
-              <Switch id="isAnonymous" name="isAnonymous" />
+              <Input id="imageUrl" name="imageUrl" className="col-span-3" placeholder="https://example.com/image.jpg" />
             </div>
+            {user && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="isAnonymous" className="text-right">
+                  Post Anonymously
+                </Label>
+                <Switch id="isAnonymous" name="isAnonymous" />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting}>
