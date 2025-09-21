@@ -8,8 +8,6 @@ import {
   signOut as firebaseSignOut,
   User,
   getRedirectResult,
-  inMemoryPersistence,
-  setPersistence,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      setLoading(false);
+      // setLoading(false) is handled in getRedirectResult to avoid flicker
     });
     return () => unsubscribe();
   }, []);
@@ -41,7 +39,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const provider = new GoogleAuthProvider();
     try {
       // Use redirect-based sign-in to avoid popup blockers
-      await setPersistence(auth, inMemoryPersistence);
       await signInWithRedirect(auth, provider);
     } catch (error: any) {
       console.error('Error signing in with Google', error);
@@ -85,11 +82,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       .catch((error) => {
         console.error('Error getting redirect result', error);
+         if (error.code === 'auth/unauthorized-domain') {
+            toast({
+                variant: 'destructive',
+                title: 'Unauthorized Domain',
+                description: 'This domain is not authorized for sign-in. Please contact support.',
+            });
+        }
       })
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [toast]);
 
 
   if (loading) {
