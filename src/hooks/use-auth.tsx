@@ -35,6 +35,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
+  // Handle the redirect result
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          // User signed in.
+          setUser(result.user);
+          toast({
+            title: 'Signed in!',
+            description: `Welcome back, ${result.user.displayName}!`,
+          });
+        }
+      })
+      .catch((error) => {
+        console.error('Error getting redirect result', error);
+         if (error.code === 'auth/unauthorized-domain') {
+            toast({
+                variant: 'destructive',
+                title: 'Unauthorized Domain',
+                description: 'This domain is not authorized for sign-in. Please contact support.',
+            });
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Sign-in Error',
+                description: 'An unexpected error occurred during sign-in. Please try again.',
+            });
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [toast]);
+
+
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
@@ -70,31 +105,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     }
   };
-  
-  // Handle the redirect result
-  useEffect(() => {
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          // User signed in.
-          setUser(result.user);
-        }
-      })
-      .catch((error) => {
-        console.error('Error getting redirect result', error);
-         if (error.code === 'auth/unauthorized-domain') {
-            toast({
-                variant: 'destructive',
-                title: 'Unauthorized Domain',
-                description: 'This domain is not authorized for sign-in. Please contact support.',
-            });
-        }
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [toast]);
-
 
   if (loading) {
     return (
