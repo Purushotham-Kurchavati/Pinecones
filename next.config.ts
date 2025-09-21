@@ -12,7 +12,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: 'as1.ftcdn.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'as2.ftcdn.net',
       },
     ],
   },
