@@ -1,4 +1,4 @@
-import { getFirestore, collection, getDocs, orderBy, query, Timestamp } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, orderBy, query, Timestamp, FirestoreError } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
 import type { Post } from '@/lib/types';
 import { PostList } from '@/components/post-list';
@@ -24,6 +24,10 @@ async function getPosts(): Promise<Post[]> {
       };
     });
   } catch (error) {
+    if (error instanceof FirestoreError && error.code === 'not-found') {
+      console.warn("Firestore database not found. It may not be created yet. Returning empty posts array.");
+      return [];
+    }
     console.error("Error fetching posts:", error);
     return [];
   }
