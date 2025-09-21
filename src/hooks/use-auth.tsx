@@ -4,10 +4,9 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import {
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithRedirect,
+  signInWithPopup,
   signOut as firebaseSignOut,
   User,
-  getRedirectResult,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -30,51 +29,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      // setLoading(false) is handled in getRedirectResult to avoid flicker
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
-  // Handle the redirect result
-  useEffect(() => {
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          // User signed in.
-          setUser(result.user);
-          toast({
-            title: 'Signed in!',
-            description: `Welcome back, ${result.user.displayName}!`,
-          });
-        }
-      })
-      .catch((error) => {
-        console.error('Error getting redirect result', error);
-         if (error.code === 'auth/unauthorized-domain') {
-            toast({
-                variant: 'destructive',
-                title: 'Unauthorized Domain',
-                description: 'This domain is not authorized for sign-in. Please contact support.',
-            });
-        } else {
-            toast({
-                variant: 'destructive',
-                title: 'Sign-in Error',
-                description: 'An unexpected error occurred during sign-in. Please try again.',
-            });
-        }
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [toast]);
-
-
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      // Use redirect-based sign-in to avoid popup blockers
-      await signInWithRedirect(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      setUser(result.user);
+      toast({
+        title: 'Signed in!',
+        description: `Welcome back, ${result.user.displayName}!`,
+      });
     } catch (error: any) {
       console.error('Error signing in with Google', error);
       if (error.code === 'auth/unauthorized-domain') {
@@ -82,6 +50,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             variant: 'destructive',
             title: 'Unauthorized Domain',
             description: 'This domain is not authorized for sign-in. Please contact support.',
+        });
+      } else if (error.code === 'auth/popup-blocked') {
+        toast({
+            variant: 'destructive',
+            title: 'Popup Blocked',
+            description: 'The sign-in popup was blocked by your browser. Please allow popups for this site.',
         });
       } else {
         toast({
@@ -96,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
+      // User state will be updated by onAuthStateChanged
     } catch (error) {
       console.error('Error signing out', error);
       toast({
