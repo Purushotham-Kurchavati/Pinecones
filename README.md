@@ -7,10 +7,7 @@ Got it 👍 You want the README in one continuous long page without too many sec
 
 Pinecones is a web application built for artisans and craftspeople to connect, share their work, and grow their online presence. It combines a vibrant community forum with a powerful AI-driven product description generator tailored for e-commerce.
 
-![Pinecones Community Page](https://storage.googleapis.com/aifire.dev/Images/pinecone-readme.png)
-
 ---
-
 ## Overview
 
 The platform is designed to empower artisans by giving them a digital-first space where they can showcase their craft, exchange ideas, and build an online presence. Alongside the community, Pinecones provides an AI toolkit that helps artisans automatically generate e-commerce–friendly titles and product descriptions, optimized for platforms like Etsy, Shopify, and Amazon.
