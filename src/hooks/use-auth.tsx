@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await updateProfile(newUser, { displayName });
       
       try {
-        await setDoc(doc(db, 'users', newUser.uid), {
+        await setDoc(doc(db, 'User', newUser.uid), {
           uid: newUser.uid,
           displayName: displayName,
           email: email,
